@@ -17,7 +17,6 @@ A full-stack community voting platform built with **FastAPI** (Python) and **Rea
 - [Python SDK](#python-sdk)
 - [Database & Migrations](#database--migrations)
 - [Running Tests](#running-tests)
-- [Deploying to Render](#deploying-to-render)
 - [Environment Notes](#environment-notes)
 
 ---
@@ -348,29 +347,6 @@ Sample dates are fixed when the file is built, so the "active" proposals auto-ex
 - the committed `openapi.json` matching the live API, so the SDK can't silently go stale
 
 The OpenAPI Generator also creates placeholder tests in `voting_sdk/test/`. They are empty stubs and test no SDK behaviour, so they are not part of the default run (`python -m pytest voting_sdk/test` runs them).
-
----
-
-## Deploying to Render
-
-`render.yaml` is a [Render Blueprint](https://render.com/docs/infrastructure-as-code) that creates two free services:
-
-| Service | Type | What it runs |
-|---|---|---|
-| `voting-api` | Python web service | `alembic upgrade head`, `seed_db.py`, then `uvicorn main:app` |
-| `voting-ui` | Static site | `npm ci && npm run build` in `frontend/`, publishing `dist/`, with a rewrite to `index.html` so `/admin` survives a refresh |
-
-1. Push this repository to GitHub.
-2. In the Render dashboard choose **New → Blueprint**, connect the repository, and select the `main` branch.
-3. When prompted for `VITE_API_URL`, enter the API's public URL: `https://voting-api.onrender.com`. If Render had to give the API a different URL (shown on the `voting-api` service page), update `VITE_API_URL` on `voting-ui` and choose **Manual Deploy → Clear build cache & deploy**. Vite bakes the value in at build time.
-4. Open the `voting-ui` URL.
-
-**Admin token:** Render generates a random `ADMIN_TOKEN` for `voting-api`. Copy it from the service's **Environment** tab and paste it into **Admin Token** on the Admin page before closing proposals.
-
-**Free-tier limits:**
-
-- The disk is ephemeral. `voting.db` is recreated and reseeded with the five sample proposals on every deploy and restart, so votes and new proposals do not persist.
-- The API sleeps after ~15 minutes without traffic. The first request afterwards takes up to a minute while it wakes, so the proposal list shows "Loading…" until then.
 
 ---
 
